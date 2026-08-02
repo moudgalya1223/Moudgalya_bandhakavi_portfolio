@@ -1,21 +1,29 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { signInWithGoogle, onAuthChange, isAdmin } from '@/lib/auth';
-import { LogIn, Loader2, ArrowLeft, Shield } from 'lucide-react';
+import { signInWithGoogle, onAuthChange, getUserRole } from '@/lib/auth';
+import { LogIn, Loader2, ArrowLeft, ShieldCheck, UserCheck } from 'lucide-react';
 
 export default function Login() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedRole = searchParams.get('role'); // 'admin' or 'client'
+
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     const unsub = onAuthChange((user) => {
-      if (user && isAdmin(user)) {
-        router.push('/admin');
+      if (user) {
+        const role = getUserRole(user);
+        if (role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/portal');
+        }
       } else {
         setCheckingAuth(false);
       }
@@ -28,10 +36,11 @@ export default function Login() {
     setErrorMsg('');
     try {
       const cred = await signInWithGoogle();
-      if (!isAdmin(cred.user)) {
-        setErrorMsg('Access denied: You are not authorized to view the developer dashboard.');
-      } else {
+      const role = getUserRole(cred.user);
+      if (role === 'admin') {
         router.push('/admin');
+      } else {
+        router.push('/portal');
       }
     } catch (err: any) {
       if (err.code !== 'auth/popup-closed-by-user') {
@@ -50,6 +59,8 @@ export default function Login() {
     );
   }
 
+  const isAdminIntent = requestedRole === 'admin';
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-primary)', padding: '24px', position: 'relative', overflow: 'hidden' }}>
       <div className="ambient-glow glow-purple" />
@@ -60,16 +71,19 @@ export default function Login() {
         <span>Back to Portfolio</span>
       </Link>
 
-      <div className="glass-card" style={{ maxWidth: '420px', width: '100%', padding: '40px', textAlign: 'center' }}>
-        <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(124, 58, 237, 0.1)', border: '1.5px solid var(--accent-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: 'var(--accent-purple)' }}>
-          <Shield size={30} />
+      <div className="glass-card" style={{ maxWidth: '440px', width: '100%', padding: '40px', textAlign: 'center' }}>
+        <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: isAdminIntent ? 'rgba(124, 58, 237, 0.1)' : 'rgba(6, 182, 212, 0.1)', border: `1.5px solid ${isAdminIntent ? 'var(--accent-purple)' : 'var(--accent-cyan)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: isAdminIntent ? 'var(--accent-purple)' : 'var(--accent-cyan)' }}>
+          {isAdminIntent ? <ShieldCheck size={30} /> : <UserCheck size={30} />}
         </div>
 
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '8px' }}>
-          Developer Access
+          {isAdminIntent ? 'Admin Console Login' : 'Client Portal Sign In'}
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '32px' }}>
-          Sign in to access your administrative dashboard, project milestones, and client lead pipeline.
+          {isAdminIntent 
+            ? 'Sign in to access developer administrative functions, project progress bars, and billing ledgers.'
+            : 'Sign in to view your active project deliverables, milestone progress, contract documents, and invoices.'
+          }
         </p>
 
         {errorMsg && (
@@ -81,7 +95,7 @@ export default function Login() {
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="btn btn-primary"
+          className={`btn ${isAdminIntent ? 'btn-primary' : 'btn-cyan'}`}
           style={{ width: '100%', gap: '10px', height: '48px' }}
         >
           {loading ? (
@@ -92,9 +106,13 @@ export default function Login() {
           <span>Sign In with Google</span>
         </button>
 
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '24px', lineHeight: 1.4 }}>
-          Protected under developer console configuration. Unauthorized access queries are logged via security settings.
-        </p>
+        <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'center', gap: '16px', fontSize: '0.8rem' }}>
+          {isAdminIntent ? (
+            <Link href="/login" style={{ color: 'var(--accent-cyan)' }}>Switch to Client Portal Login</Link>
+          ) : (
+            <Link href="/login?role=admin" style={{ color: 'var(--accent-purple)' }}>Admin Portal Access</Link>
+          )}
+        </div>
       </div>
     </div>
   );

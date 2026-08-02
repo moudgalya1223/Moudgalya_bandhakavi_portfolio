@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Menu, X, Shield } from 'lucide-react';
+import { Menu, X, Shield, UserCheck } from 'lucide-react';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,7 +29,11 @@ export default function Navbar() {
           <a href="#projects">Projects</a>
           <a href="#services">Services</a>
           <a href="#booking" className="nav-cta">Book Consultation</a>
-          <Link href="/login" className="nav-login">
+          <Link href="/login" className="nav-login" style={{ borderColor: 'rgba(6,182,212,0.3)', color: 'var(--accent-cyan)' }}>
+            <UserCheck size={16} />
+            <span>Client Portal</span>
+          </Link>
+          <Link href="/login?role=admin" className="nav-login">
             <Shield size={16} />
             <span>Admin</span>
           </Link>
@@ -49,7 +53,10 @@ export default function Navbar() {
           <a href="#services" onClick={() => setIsOpen(false)}>Services</a>
           <a href="#booking" className="mobile-cta" onClick={() => setIsOpen(false)}>Book Consultation</a>
           <Link href="/login" className="mobile-login" onClick={() => setIsOpen(false)}>
-            Admin Login
+            Client Portal Login
+          </Link>
+          <Link href="/login?role=admin" className="mobile-login" onClick={() => setIsOpen(false)} style={{ borderColor: 'rgba(124, 58, 237, 0.4)', color: '#c084fc' }}>
+            Admin Portal Access
           </Link>
         </div>
       )}

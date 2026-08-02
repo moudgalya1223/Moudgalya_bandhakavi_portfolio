@@ -23,5 +23,15 @@ export function onAuthChange(cb: (user: User | null) => void) {
 export function isAdmin(user: User | null): boolean {
   if (!user) return false;
   const adminUid = process.env.NEXT_PUBLIC_ADMIN_UID;
-  return !adminUid || user.uid === adminUid;
+  if (adminUid && user.uid === adminUid) return true;
+  // If email matches Moudgalya's developer email
+  if (user.email === 'dattamoudgalyabandhakavi@gmail.com') return true;
+  // Default to true if no adminUid specified in env
+  return !adminUid;
+}
+
+export function getUserRole(user: User | null): 'admin' | 'client' | 'none' {
+  if (!user) return 'none';
+  if (isAdmin(user)) return 'admin';
+  return 'client';
 }
