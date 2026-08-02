@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { signInWithGoogle, onAuthChange, getUserRole } from '@/lib/auth';
 import { LogIn, Loader2, ArrowLeft, ShieldCheck, UserCheck } from 'lucide-react';
 
-export default function Login() {
+function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedRole = searchParams.get('role'); // 'admin' or 'client'
@@ -115,5 +115,17 @@ export default function Login() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-primary)' }}>
+        <Loader2 className="animate-spin text-purple" size={40} />
+      </div>
+    }>
+      <LoginFormContent />
+    </Suspense>
   );
 }
