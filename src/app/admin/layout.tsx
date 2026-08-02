@@ -34,11 +34,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     const unsub = onAuthChange((user) => {
-      if (user && isAdmin(user)) {
+      if (!user) {
+        router.push('/login?role=admin');
+      } else if (isAdmin(user)) {
         setAuthenticated(true);
         setLoading(false);
       } else {
-        router.push('/login');
+        // Non-admin clients are redirected to the Client Portal
+        router.push('/portal');
       }
     });
     return () => unsub();
