@@ -9,6 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://moudgalya.store'),
   title: 'Moudgalya Bandhakavi — Full-Stack Developer & AI Engineer',
   description:
     'Senior Full-Stack Developer & AI Engineer with 4+ years experience in React, Python, AWS, and Machine Learning. Available for freelance consulting, MVP development, and AI integration.',
