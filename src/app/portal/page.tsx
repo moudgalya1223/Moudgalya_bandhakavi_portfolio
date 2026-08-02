@@ -99,7 +99,7 @@ export default function ClientPortal() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', paddingBottom: '60px' }}>
       {/* Top Client Navbar */}
-      <header style={{ height: '70px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', padding: '0 30px', justifyContent: 'space-between', sticky: 'top', top: 0, zIndex: 100 }}>
+      <header style={{ height: '70px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', padding: '0 30px', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
         <Link href="/" style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)' }}>
           MOUDGALYA<span>.B</span> <span style={{ fontSize: '0.75rem', color: 'var(--accent-cyan)', fontWeight: 600, marginLeft: '8px', padding: '2px 8px', background: 'rgba(6,182,212,0.1)', borderRadius: '4px', border: '1px solid rgba(6,182,212,0.2)' }}>CLIENT PORTAL</span>
         </Link>

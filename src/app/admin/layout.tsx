@@ -92,8 +92,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       name: leadName,
       email: leadEmail,
       projectType: 'MVP',
-      budget: '$5k–$15k',
+      budget: '$1k–$3k',
       goals: leadGoals,
+      stage: 'inquiry',
     });
     setLeadName('');
     setLeadEmail('');

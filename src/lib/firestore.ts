@@ -21,7 +21,7 @@ export interface Lead {
   projectType: string;
   budget: string;
   goals: string;
-  stage: 'inquiry' | 'call' | 'proposal' | 'active';
+  stage?: 'inquiry' | 'call' | 'proposal' | 'active';
   createdAt?: any;
   notes?: string;
   meetingDate?: string;
