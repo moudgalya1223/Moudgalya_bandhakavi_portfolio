@@ -6,7 +6,7 @@ export default function ServicesTiers() {
   const tiers = [
     {
       name: 'Code Review & Audit',
-      price: '$1,500',
+      price: '$499',
       period: 'per audit',
       desc: 'Deep refactoring check, API performance audit, and database constraint analysis.',
       features: [
@@ -20,7 +20,7 @@ export default function ServicesTiers() {
     },
     {
       name: 'MVP Launch Pad',
-      price: '$5,000',
+      price: '$1,999',
       period: 'per product',
       desc: 'Build and launch your web or mobile app prototype in weeks with verified stack components.',
       features: [
@@ -34,7 +34,7 @@ export default function ServicesTiers() {
     },
     {
       name: 'Ongoing Fractional Dev',
-      price: '$3,500',
+      price: '$1,499',
       period: 'per month',
       desc: 'Dedicated weekly engineering capacity to expand your product features, code refactoring, and mentor junior devs.',
       features: [

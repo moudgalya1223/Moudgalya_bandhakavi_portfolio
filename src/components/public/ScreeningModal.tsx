@@ -14,7 +14,7 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [projectType, setProjectType] = useState('MVP');
-  const [budget, setBudget] = useState('$5k–$15k');
+  const [budget, setBudget] = useState('$1k–$3k');
   const [goals, setGoals] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -143,9 +143,9 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
                     value={budget}
                     onChange={(e) => setBudget(e.target.value)}
                   >
-                    <option value="<$5k">&lt;$5k</option>
-                    <option value="$5k–$15k">$5k–$15k</option>
-                    <option value="$15k+">$15k+</option>
+                    <option value="<$1k">&lt;$1k</option>
+                    <option value="$1k–$3k">$1k–$3k</option>
+                    <option value="$3k+">$3k+</option>
                   </select>
                 </div>
               </div>
