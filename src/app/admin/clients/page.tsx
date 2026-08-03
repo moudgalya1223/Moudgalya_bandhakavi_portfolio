@@ -161,14 +161,31 @@ export default function ClientsPage() {
                 <span>Interest: {selectedLead.projectType}</span>
               </p>
             </div>
-            <button 
-              onClick={() => selectedLead.id && handleDelete(selectedLead.id)} 
-              className="btn btn-secondary" 
-              style={{ color: 'var(--accent-rose)', borderColor: 'rgba(244, 63, 94, 0.2)', padding: '6px 12px', fontSize: '0.8rem' }}
-            >
-              <Trash size={14} />
-              <span>Delete Lead</span>
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div>
+                <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Update Status Stage:</label>
+                <select
+                  className="form-select"
+                  value={selectedLead.stage || 'inquiry'}
+                  onChange={(e) => selectedLead.id && handleMoveStage(selectedLead.id, e.target.value as Lead['stage'])}
+                  style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                >
+                  <option value="inquiry">Inquiry Received</option>
+                  <option value="call">Call Scheduled</option>
+                  <option value="proposal">Proposal Under Review</option>
+                  <option value="active">Active Client / Approved</option>
+                </select>
+              </div>
+
+              <button 
+                onClick={() => selectedLead.id && handleDelete(selectedLead.id)} 
+                className="btn btn-secondary" 
+                style={{ color: 'var(--accent-rose)', borderColor: 'rgba(244, 63, 94, 0.2)', padding: '6px 12px', fontSize: '0.8rem', marginTop: '18px' }}
+              >
+                <Trash size={14} />
+                <span>Delete Lead</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid-2" style={{ gap: '30px', marginBottom: '24px' }}>

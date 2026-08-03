@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthChange, signOut } from '@/lib/auth';
-import { subscribeToProjects, subscribeToInvoices, addLead, Project, Invoice } from '@/lib/firestore';
+import { subscribeToProjects, subscribeToInvoices, subscribeToLeads, addLead, Project, Invoice, Lead } from '@/lib/firestore';
 import { 
   FolderGit2, 
   CheckCircle2, 
@@ -15,7 +15,8 @@ import {
   User, 
   Loader2,
   ShieldCheck,
-  Code2
+  Code2,
+  Layers
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -25,6 +26,7 @@ export default function ClientPortal() {
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [clientLeads, setClientLeads] = useState<Lead[]>([]);
 
   useEffect(() => {
     const unsubAuth = onAuthChange((currentUser) => {
@@ -38,11 +40,13 @@ export default function ClientPortal() {
 
     const unsubProjects = subscribeToProjects(setProjects);
     const unsubInvoices = subscribeToInvoices(setInvoices);
+    const unsubLeads = subscribeToLeads(setClientLeads);
 
     return () => {
       unsubAuth();
       unsubProjects();
       unsubInvoices();
+      unsubLeads();
     };
   }, [router]);
 
@@ -337,6 +341,90 @@ export default function ClientPortal() {
             </div>
           </div>
         </div>
+
+        {/* Project Requests & Proposal Status Section (Read-only for clients) */}
+        <div className="glass-card" style={{ marginBottom: '30px', padding: '30px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+            <div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Layers size={20} className="text-cyan" />
+                <span>Your Project Requests & Proposal Status</span>
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>
+                Track real-time progress and review status for all your submitted project requests and proposals.
+              </p>
+            </div>
+            <button 
+              onClick={() => { setProposalSuccess(false); setShowProposalModal(true); }}
+              className="btn btn-cyan" 
+              style={{ padding: '6px 14px', fontSize: '0.8rem', display: 'flex', gap: '6px' }}
+            >
+              <Code2 size={14} />
+              <span>Submit New Request</span>
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {clientLeads.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '30px', background: 'rgba(0,0,0,0.15)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No project requests submitted yet.</p>
+              </div>
+            ) : (
+              clientLeads.map((lead) => {
+                const getStatusInfo = (stage?: string) => {
+                  switch (stage) {
+                    case 'active':
+                      return { label: 'ACTIVE / APPROVED', color: 'var(--accent-emerald)', bg: 'rgba(16, 185, 129, 0.1)' };
+                    case 'proposal':
+                      return { label: 'PROPOSAL UNDER REVIEW', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' };
+                    case 'call':
+                      return { label: 'CALL SCHEDULED', color: 'var(--accent-purple)', bg: 'rgba(124, 58, 237, 0.1)' };
+                    default:
+                      return { label: 'INQUIRY RECEIVED', color: 'var(--accent-cyan)', bg: 'rgba(6, 182, 212, 0.1)' };
+                  }
+                };
+                const status = getStatusInfo(lead.stage);
+
+                return (
+                  <div key={lead.id} style={{ padding: '20px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                          {lead.projectType || 'Project Proposal'}
+                        </h3>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                          Requested by: <strong>{lead.name}</strong> ({lead.email}) • Budget: <strong>{lead.budget}</strong>
+                        </p>
+                      </div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: status.color, background: status.bg, padding: '4px 12px', borderRadius: '99px', border: `1px solid ${status.color}40`, textTransform: 'uppercase' }}>
+                        {status.label}
+                      </span>
+                    </div>
+
+                    {lead.goals && (
+                      <div style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 'var(--radius-sm)', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                        {lead.goals}
+                      </div>
+                    )}
+
+                    {lead.meetingDate && (
+                      <div style={{ fontSize: '0.8rem', color: 'var(--accent-cyan)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Clock size={14} />
+                        <span>Schedule Note: {lead.meetingDate}</span>
+                      </div>
+                    )}
+
+                    {lead.notes && (
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', borderTop: '1px dashed var(--border-color)', paddingTop: '8px' }}>
+                        Developer Response / Note: <em style={{ color: 'var(--text-primary)' }}>{lead.notes}</em>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Client Proposal Submission Modal */}
@@ -353,7 +441,7 @@ export default function ClientPortal() {
                   Submit Project Proposal
                 </h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '20px' }}>
-                  Directly notify <strong>dattu99rockstar@gmail.com</strong> with your new project request or bug fixing scope.
+                  Submit your request directly to lead developer <strong>dattumoudgalyabandhakavi@gmail.com</strong>.
                 </p>
 
                 <form onSubmit={handleProposalSubmit}>
@@ -431,10 +519,10 @@ export default function ClientPortal() {
                     {submittingProposal ? (
                       <>
                         <Loader2 className="animate-spin" size={18} />
-                        <span>Sending Proposal...</span>
+                        <span>Submitting Proposal...</span>
                       </>
                     ) : (
-                      'Submit Proposal to dattu99rockstar@gmail.com'
+                      'Submit Proposal'
                     )}
                   </button>
                 </form>
@@ -448,22 +536,12 @@ export default function ClientPortal() {
                   Proposal Submitted!
                 </h2>
                 <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '24px', fontSize: '0.9rem' }}>
-                  Your proposal <strong>&quot;{proposalTitle}&quot;</strong> has been logged. Notification details have been sent to <strong>dattu99rockstar@gmail.com</strong>.
+                  Thank you! Your proposal <strong>&quot;{proposalTitle}&quot;</strong> has been logged into your dashboard and dispatched to <strong>dattumoudgalyabandhakavi@gmail.com</strong>.
                 </p>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <a
-                    href={getProposalMailto()}
-                    className="btn btn-cyan"
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                  >
-                    <span>Send Direct Email to dattu99rockstar@gmail.com</span>
-                  </a>
-
-                  <button className="btn btn-secondary" onClick={() => setShowProposalModal(false)} style={{ width: '100%' }}>
-                    Close
-                  </button>
-                </div>
+                <button className="btn btn-secondary" onClick={() => setShowProposalModal(false)} style={{ width: '100%' }}>
+                  Close & View Request Status
+                </button>
               </div>
             )}
           </div>

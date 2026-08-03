@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
 
     saveToFirestore();
 
+    const recipientEmail = 'dattumoudgalyabandhakavi@gmail.com';
     const mailtoSubject = encodeURIComponent(`[NEW CONSULTATION BOOKING] ${name} - ${projectType}`);
     const mailtoBody = encodeURIComponent(
       `New Consultation Call Booked!\n\n` +
@@ -47,14 +48,15 @@ export async function POST(request: NextRequest) {
       `Budget: ${budget}\n\n` +
       `Project Goals:\n${goals}\n`
     );
-    const mailtoLink = `mailto:dattu99rockstar@gmail.com?subject=${mailtoSubject}&body=${mailtoBody}`;
+    const mailtoLink = `mailto:${recipientEmail}?subject=${mailtoSubject}&body=${mailtoBody}`;
 
-    // Return instant success along with notification details
+    // Return instant success along with notification details and automated confirmation metadata
     return NextResponse.json({ 
       success: true, 
       leadId,
-      recipientEmail: 'dattu99rockstar@gmail.com',
-      mailtoLink
+      recipientEmail,
+      mailtoLink,
+      confirmationMessage: `Thank you, ${name}! Your consultation booking request has been dispatched to ${recipientEmail} and confirmed for ${meetingDate}.`
     });
   } catch (error: any) {
     console.error('Booking confirmation API error:', error);

@@ -40,7 +40,7 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
     const endDateObj = new Date(new Date(`${date} ${time}`).getTime() + 30 * 60000);
     const endIso = endDateObj.toISOString().replace(/-|:|\.\d\d\d/g, '');
 
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${startIso}/${endIso}&add=dattu99rockstar@gmail.com,${encodeURIComponent(email)}`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${startIso}/${endIso}&add=dattumoudgalyabandhakavi@gmail.com,${encodeURIComponent(email)}`;
   };
 
   const handleDownloadICS = () => {
@@ -61,9 +61,9 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
       `DTEND:${formatICSDate(endDateObj)}`,
       `SUMMARY:Consultation Call: Moudgalya Bandhakavi & ${name}`,
       `DESCRIPTION:Client: ${name} (${email})\\nProject Type: ${projectType}\\nBudget: ${budget}\\nGoals: ${goals}`,
-      'ORGANIZER;CN=Moudgalya Bandhakavi:mailto:dattu99rockstar@gmail.com',
+      'ORGANIZER;CN=Moudgalya Bandhakavi:mailto:dattumoudgalyabandhakavi@gmail.com',
       `ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;CN=${name}:mailto:${email}`,
-      'ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Moudgalya:mailto:dattu99rockstar@gmail.com',
+      'ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Moudgalya:mailto:dattumoudgalyabandhakavi@gmail.com',
       'STATUS:CONFIRMED',
       'END:VEVENT',
       'END:VCALENDAR'
@@ -78,20 +78,6 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  };
-
-  const getMailtoLink = () => {
-    const subject = encodeURIComponent(`[NEW CONSULTATION BOOKING] ${name} - ${projectType}`);
-    const body = encodeURIComponent(
-      `New Consultation Call Booked!\n\n` +
-      `Client Name: ${name}\n` +
-      `Client Email: ${email}\n` +
-      `Requested Date/Time: ${formattedDate} at ${time}\n` +
-      `Project Type: ${projectType}\n` +
-      `Budget: ${budget}\n\n` +
-      `Project Goals:\n${goals}\n`
-    );
-    return `mailto:dattu99rockstar@gmail.com?subject=${subject}&body=${body}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -256,7 +242,7 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
               Consultation Scheduled!
             </h2>
             <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '20px', fontSize: '0.9rem' }}>
-              Thank you, <strong>{name}</strong>. Notification request has been dispatched to <strong>dattu99rockstar@gmail.com</strong> and recipient <strong>{email}</strong> for {formattedDate} at {time}.
+              Thank you, <strong>{name}</strong>! Your consultation request has been submitted to <strong>dattumoudgalyabandhakavi@gmail.com</strong>. A confirmation and calendar invite have been generated for <strong>{formattedDate} at {time}</strong>.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
@@ -278,14 +264,6 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
               >
                 <span>Download Calendar Invite (.ics)</span>
               </button>
-
-              <a
-                href={getMailtoLink()}
-                className="btn btn-cyan"
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem' }}
-              >
-                <span>Send Direct Email to dattu99rockstar@gmail.com</span>
-              </a>
             </div>
 
             <button className="btn btn-secondary" onClick={onClose} style={{ width: '150px' }}>

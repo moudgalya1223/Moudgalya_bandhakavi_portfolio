@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
 
     saveToFirestore();
 
+    const recipientEmail = 'dattumoudgalyabandhakavi@gmail.com';
     const mailtoSubject = encodeURIComponent(`[NEW CLIENT PROPOSAL] ${title} from ${clientName || clientEmail}`);
     const mailtoBody = encodeURIComponent(
       `New Project Proposal Received!\n\n` +
@@ -47,12 +48,12 @@ export async function POST(request: NextRequest) {
       `Preferred Stack: ${stack || 'Full-Stack'}\n\n` +
       `Project Details & Requirements:\n${description}\n`
     );
-    const mailtoLink = `mailto:dattu99rockstar@gmail.com?subject=${mailtoSubject}&body=${mailtoBody}`;
+    const mailtoLink = `mailto:${recipientEmail}?subject=${mailtoSubject}&body=${mailtoBody}`;
 
     return NextResponse.json({ 
       success: true, 
       proposalId, 
-      recipient: 'dattu99rockstar@gmail.com',
+      recipient: recipientEmail,
       mailtoLink 
     });
   } catch (error: any) {
