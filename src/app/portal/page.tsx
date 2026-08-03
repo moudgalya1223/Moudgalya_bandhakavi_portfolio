@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthChange, signOut } from '@/lib/auth';
-import { subscribeToProjects, subscribeToInvoices, Project, Invoice } from '@/lib/firestore';
+import { subscribeToProjects, subscribeToInvoices, addLead, Project, Invoice } from '@/lib/firestore';
 import { 
   FolderGit2, 
   CheckCircle2, 
@@ -96,6 +96,69 @@ export default function ClientPortal() {
     },
   ];
 
+  // State for Proposal Modal
+  const [showProposalModal, setShowProposalModal] = useState(false);
+  const [proposalTitle, setProposalTitle] = useState('');
+  const [proposalStack, setProposalStack] = useState('Full-Stack Web App');
+  const [proposalBudget, setProposalBudget] = useState('Project-based USD ($)');
+  const [proposalTimeline, setProposalTimeline] = useState('2-4 Weeks');
+  const [proposalDesc, setProposalDesc] = useState('');
+  const [submittingProposal, setSubmittingProposal] = useState(false);
+  const [proposalSuccess, setProposalSuccess] = useState(false);
+
+  const handleProposalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittingProposal(true);
+    try {
+      // 1. Add lead entry to client store
+      await addLead({
+        name: user?.displayName || user?.email || 'Client Partner',
+        email: user?.email || 'client@company.com',
+        projectType: proposalStack,
+        budget: proposalBudget,
+        goals: `[CLIENT PORTAL PROPOSAL] ${proposalTitle}: ${proposalDesc}`,
+        stage: 'proposal',
+        meetingDate: `Target timeline: ${proposalTimeline}`,
+      });
+
+      // 2. Dispatch to backend API
+      await fetch('/api/proposal/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientName: user?.displayName || user?.email,
+          clientEmail: user?.email,
+          title: proposalTitle,
+          description: proposalDesc,
+          stack: proposalStack,
+          budget: proposalBudget,
+          timeline: proposalTimeline,
+        }),
+      });
+
+      setProposalSuccess(true);
+    } catch (err) {
+      console.error('Error submitting proposal:', err);
+    } finally {
+      setSubmittingProposal(false);
+    }
+  };
+
+  const getProposalMailto = () => {
+    const subject = encodeURIComponent(`[NEW CLIENT PROPOSAL] ${proposalTitle} from ${user?.email}`);
+    const body = encodeURIComponent(
+      `New Project Proposal Submission!\n\n` +
+      `Client Name: ${user?.displayName || 'Client Portal User'}\n` +
+      `Client Email: ${user?.email}\n` +
+      `Project Title: ${proposalTitle}\n` +
+      `Preferred Stack: ${proposalStack}\n` +
+      `Estimated Budget: ${proposalBudget}\n` +
+      `Target Timeline: ${proposalTimeline}\n\n` +
+      `Project Requirements:\n${proposalDesc}\n`
+    );
+    return `mailto:dattu99rockstar@gmail.com?subject=${subject}&body=${body}`;
+  };
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', paddingBottom: '60px' }}>
       {/* Top Client Navbar */}
@@ -132,10 +195,21 @@ export default function ClientPortal() {
               </p>
             </div>
             
-            <a href="/#booking" className="btn btn-primary" style={{ display: 'flex', gap: '8px' }}>
-              <Calendar size={16} />
-              <span>Book Follow-up Call</span>
-            </a>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <button 
+                onClick={() => { setProposalSuccess(false); setShowProposalModal(true); }}
+                className="btn btn-cyan" 
+                style={{ display: 'flex', gap: '8px' }}
+              >
+                <Code2 size={16} />
+                <span>Submit New Proposal</span>
+              </button>
+
+              <a href="/#booking" className="btn btn-primary" style={{ display: 'flex', gap: '8px' }}>
+                <Calendar size={16} />
+                <span>Book Follow-up Call</span>
+              </a>
+            </div>
           </div>
         </div>
 
@@ -264,6 +338,137 @@ export default function ClientPortal() {
           </div>
         </div>
       </div>
+
+      {/* Client Proposal Submission Modal */}
+      {showProposalModal && (
+        <div className="modal-overlay">
+          <div className="modal-content glass-card" style={{ maxWidth: '560px', padding: '30px' }}>
+            <button className="modal-close" onClick={() => setShowProposalModal(false)}>
+              ✕
+            </button>
+
+            {!proposalSuccess ? (
+              <>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '6px' }}>
+                  Submit Project Proposal
+                </h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '20px' }}>
+                  Directly notify <strong>dattu99rockstar@gmail.com</strong> with your new project request or bug fixing scope.
+                </p>
+
+                <form onSubmit={handleProposalSubmit}>
+                  <div className="form-group">
+                    <label className="form-label">Project Title / Scope</label>
+                    <input
+                      type="text"
+                      required
+                      className="form-input"
+                      placeholder="e.g. Next.js SaaS Web App or Critical API Bug Fix"
+                      value={proposalTitle}
+                      onChange={(e) => setProposalTitle(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid-2" style={{ gap: '16px', marginBottom: '16px' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label">Service / Stack</label>
+                      <select
+                        className="form-select"
+                        value={proposalStack}
+                        onChange={(e) => setProposalStack(e.target.value)}
+                      >
+                        <option value="Full-Stack Web App">Full-Stack Web App</option>
+                        <option value="Mobile App (React Native/Flutter)">Mobile App</option>
+                        <option value="Bug Fix & Troubleshooting ($50/hr)">Bug Fix & Troubleshooting ($50/hr)</option>
+                        <option value="Architecture & Code Audit">Architecture & Code Audit</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label">Budget (USD $)</label>
+                      <select
+                        className="form-select"
+                        value={proposalBudget}
+                        onChange={(e) => setProposalBudget(e.target.value)}
+                      >
+                        <option value="Small Bug Fix ($50/hr)">Small Bug Fix ($50/hr)</option>
+                        <option value="Project-based <$1k USD">Project-based &lt;$1k USD</option>
+                        <option value="Project-based $1k–$3k USD">Project-based $1k–$3k USD</option>
+                        <option value="Project-based $3k+ USD">Project-based $3k+ USD</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Target Timeline</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="e.g. ASAP / 2 Weeks / 1 Month"
+                      value={proposalTimeline}
+                      onChange={(e) => setProposalTimeline(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Project Requirements & Description</label>
+                    <textarea
+                      required
+                      rows={4}
+                      className="form-textarea"
+                      placeholder="Describe the features, issues to fix, or deliverables required..."
+                      value={proposalDesc}
+                      onChange={(e) => setProposalDesc(e.target.value)}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={submittingProposal}
+                    className="btn btn-primary"
+                    style={{ width: '100%', marginTop: '10px' }}
+                  >
+                    {submittingProposal ? (
+                      <>
+                        <Loader2 className="animate-spin" size={18} />
+                        <span>Sending Proposal...</span>
+                      </>
+                    ) : (
+                      'Submit Proposal to dattu99rockstar@gmail.com'
+                    )}
+                  </button>
+                </form>
+              </>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '20px 10px' }}>
+                <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', border: '2px solid var(--accent-emerald)', display: 'flex', alignItems: 'center', justifyItems: 'center', margin: '0 auto 20px', color: 'var(--accent-emerald)' }}>
+                  <CheckCircle2 size={30} style={{ margin: 'auto' }} />
+                </div>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '12px' }}>
+                  Proposal Submitted!
+                </h2>
+                <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '24px', fontSize: '0.9rem' }}>
+                  Your proposal <strong>&quot;{proposalTitle}&quot;</strong> has been logged. Notification details have been sent to <strong>dattu99rockstar@gmail.com</strong>.
+                </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <a
+                    href={getProposalMailto()}
+                    className="btn btn-cyan"
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  >
+                    <span>Send Direct Email to dattu99rockstar@gmail.com</span>
+                  </a>
+
+                  <button className="btn btn-secondary" onClick={() => setShowProposalModal(false)} style={{ width: '100%' }}>
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

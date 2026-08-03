@@ -37,8 +37,25 @@ export async function POST(request: NextRequest) {
 
     saveToFirestore();
 
-    // Return instant success so UI modal updates immediately
-    return NextResponse.json({ success: true, leadId });
+    const mailtoSubject = encodeURIComponent(`[NEW CONSULTATION BOOKING] ${name} - ${projectType}`);
+    const mailtoBody = encodeURIComponent(
+      `New Consultation Call Booked!\n\n` +
+      `Client Name: ${name}\n` +
+      `Client Email: ${email}\n` +
+      `Requested Date/Time: ${meetingDate}\n` +
+      `Project Type: ${projectType}\n` +
+      `Budget: ${budget}\n\n` +
+      `Project Goals:\n${goals}\n`
+    );
+    const mailtoLink = `mailto:dattu99rockstar@gmail.com?subject=${mailtoSubject}&body=${mailtoBody}`;
+
+    // Return instant success along with notification details
+    return NextResponse.json({ 
+      success: true, 
+      leadId,
+      recipientEmail: 'dattu99rockstar@gmail.com',
+      mailtoLink
+    });
   } catch (error: any) {
     console.error('Booking confirmation API error:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });

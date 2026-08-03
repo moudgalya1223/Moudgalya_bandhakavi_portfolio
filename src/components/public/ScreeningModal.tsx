@@ -27,6 +27,73 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
     year: 'numeric',
   });
 
+  const generateGoogleCalendarUrl = () => {
+    const title = encodeURIComponent(`Consultation Call: Moudgalya Bandhakavi & ${name}`);
+    const details = encodeURIComponent(
+      `Consultation Discovery Call\n\nClient Name: ${name}\nClient Email: ${email}\nProject Type: ${projectType}\nBudget: ${budget}\n\nGoals & Scope:\n${goals}`
+    );
+    const location = encodeURIComponent(`Google Meet / Video Conference`);
+
+    // Parse date & time into approximate ISO dates for calendar event
+    const startIso = new Date(`${date} ${time}`).toISOString().replace(/-|:|\.\d\d\d/g, '');
+    // Default 30 min duration
+    const endDateObj = new Date(new Date(`${date} ${time}`).getTime() + 30 * 60000);
+    const endIso = endDateObj.toISOString().replace(/-|:|\.\d\d\d/g, '');
+
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${startIso}/${endIso}&add=dattu99rockstar@gmail.com,${encodeURIComponent(email)}`;
+  };
+
+  const handleDownloadICS = () => {
+    const startDateObj = new Date(`${date} ${time}`);
+    const endDateObj = new Date(startDateObj.getTime() + 30 * 60000);
+    const formatICSDate = (d: Date) => d.toISOString().replace(/-|:|\.\d\d\d/g, '');
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Moudgalya Bandhakavi//Consultation Booking//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:REQUEST',
+      'BEGIN:VEVENT',
+      `UID:booking-${Date.now()}@moudgalya.store`,
+      `DTSTAMP:${formatICSDate(new Date())}`,
+      `DTSTART:${formatICSDate(startDateObj)}`,
+      `DTEND:${formatICSDate(endDateObj)}`,
+      `SUMMARY:Consultation Call: Moudgalya Bandhakavi & ${name}`,
+      `DESCRIPTION:Client: ${name} (${email})\\nProject Type: ${projectType}\\nBudget: ${budget}\\nGoals: ${goals}`,
+      'ORGANIZER;CN=Moudgalya Bandhakavi:mailto:dattu99rockstar@gmail.com',
+      `ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;CN=${name}:mailto:${email}`,
+      'ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Moudgalya:mailto:dattu99rockstar@gmail.com',
+      'STATUS:CONFIRMED',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `consultation-invite-${date}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const getMailtoLink = () => {
+    const subject = encodeURIComponent(`[NEW CONSULTATION BOOKING] ${name} - ${projectType}`);
+    const body = encodeURIComponent(
+      `New Consultation Call Booked!\n\n` +
+      `Client Name: ${name}\n` +
+      `Client Email: ${email}\n` +
+      `Requested Date/Time: ${formattedDate} at ${time}\n` +
+      `Project Type: ${projectType}\n` +
+      `Budget: ${budget}\n\n` +
+      `Project Goals:\n${goals}\n`
+    );
+    return `mailto:dattu99rockstar@gmail.com?subject=${subject}&body=${body}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -44,7 +111,7 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
         meetingDate: `${date} at ${time}`,
       });
 
-      // Also trigger API handler non-blockingly
+      // Also trigger API handler
       fetch('/api/booking/confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -129,23 +196,24 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
                     value={projectType}
                     onChange={(e) => setProjectType(e.target.value)}
                   >
-                    <option value="MVP">MVP Development</option>
-                    <option value="Architecture Review">Architecture Review</option>
-                    <option value="Ongoing Retainer">Ongoing Retainer</option>
-                    <option value="AI Integration">AI Integration</option>
+                    <option value="MVP / Full App Building">MVP / Full App Building</option>
+                    <option value="Bug Fix / Troubleshooting ($50/hr)">Bug Fix / Troubleshooting ($50/hr)</option>
+                    <option value="Architecture & Code Audit">Architecture & Code Audit</option>
+                    <option value="Ongoing Development">Ongoing Development</option>
                   </select>
                 </div>
 
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Estimated Budget</label>
+                  <label className="form-label">Estimated Budget (USD)</label>
                   <select
                     className="form-select"
                     value={budget}
                     onChange={(e) => setBudget(e.target.value)}
                   >
-                    <option value="<$1k">&lt;$1k</option>
-                    <option value="$1k–$3k">$1k–$3k</option>
-                    <option value="$3k+">$3k+</option>
+                    <option value="$50/hr Bug Fix">$50/hr Bug Fix</option>
+                    <option value="<$1k USD">&lt;$1k USD</option>
+                    <option value="$1k–$3k USD">$1k–$3k USD</option>
+                    <option value="$3k+ USD">$3k+ USD</option>
                   </select>
                 </div>
               </div>
@@ -156,7 +224,7 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
                   required
                   rows={4}
                   className="form-textarea"
-                  placeholder="Describe what you want to build or audit..."
+                  placeholder="Describe what you want to build or fix..."
                   value={goals}
                   onChange={(e) => setGoals(e.target.value)}
                 />
@@ -180,16 +248,46 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
             </form>
           </>
         ) : (
-          <div style={{ textAlign: 'center', padding: '30px 10px' }}>
+          <div style={{ textAlign: 'center', padding: '20px 10px' }}>
             <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', border: '2px solid var(--accent-emerald)', display: 'flex', alignItems: 'center', justifyItems: 'center', margin: '0 auto 20px', color: 'var(--accent-emerald)' }}>
               <Calendar size={30} style={{ margin: 'auto' }} />
             </div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '12px' }}>
               Consultation Scheduled!
             </h2>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '24px' }}>
-              Thank you, {name}. A calendar invitation with Google Meet details has been sent to <strong>{email}</strong>. I look forward to speaking with you on {formattedDate} at {time}.
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '20px', fontSize: '0.9rem' }}>
+              Thank you, <strong>{name}</strong>. Notification request has been dispatched to <strong>dattu99rockstar@gmail.com</strong> and recipient <strong>{email}</strong> for {formattedDate} at {time}.
             </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
+              <a
+                href={generateGoogleCalendarUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary"
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              >
+                <Calendar size={16} />
+                <span>Add to Google Calendar</span>
+              </a>
+
+              <button
+                onClick={handleDownloadICS}
+                className="btn btn-secondary"
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              >
+                <span>Download Calendar Invite (.ics)</span>
+              </button>
+
+              <a
+                href={getMailtoLink()}
+                className="btn btn-cyan"
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem' }}
+              >
+                <span>Send Direct Email to dattu99rockstar@gmail.com</span>
+              </a>
+            </div>
+
             <button className="btn btn-secondary" onClick={onClose} style={{ width: '150px' }}>
               Close
             </button>

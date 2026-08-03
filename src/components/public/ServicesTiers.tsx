@@ -5,44 +5,44 @@ import { Check } from 'lucide-react';
 export default function ServicesTiers() {
   const tiers = [
     {
-      name: 'Code Review & Audit',
-      price: '$499',
-      period: 'per audit',
-      desc: 'Deep refactoring check, API performance audit, and database constraint analysis.',
+      name: 'Full-Stack Product & App Building',
+      price: 'Custom USD ($)',
+      period: 'project-based on size',
+      desc: 'Complete end-to-end full-stack web or mobile application development tailored to your exact scope.',
       features: [
-        'Security & dependency scanning',
-        'Database optimization (Postgres/Firebase)',
-        'Code refactoring roadmap',
-        '1-hour architecture walkthrough call',
-        'Next.js/Django stack focus',
-      ],
-      featured: false,
-    },
-    {
-      name: 'MVP Launch Pad',
-      price: '$1,999',
-      period: 'per product',
-      desc: 'Build and launch your web or mobile app prototype in weeks with verified stack components.',
-      features: [
-        'Interactive React/Angular front-end',
-        'Firebase/PostgreSQL cloud database setup',
-        'Google/AWS Cloud serverless deployment',
-        'Stripe payment gateway integration',
-        '30-day post-launch support',
+        'Interactive React / Next.js / Angular front-end',
+        'Custom backend API & Database (Node/Python/Firebase/Postgres)',
+        'Serverless cloud deployment (AWS/GCP/Vercel)',
+        'Payment gateway & third-party API integrations',
+        '30-day post-launch warranty & support',
       ],
       featured: true,
     },
     {
-      name: 'Ongoing Fractional Dev',
-      price: '$1,499',
-      period: 'per month',
-      desc: 'Dedicated weekly engineering capacity to expand your product features, code refactoring, and mentor junior devs.',
+      name: 'Bug Fixes & Small Tasks',
+      price: '$50 USD',
+      period: 'per hour',
+      desc: 'Rapid, targeted bug fixes, code troubleshooting, and small feature updates for existing applications.',
       features: [
-        '15-20 hours of focused coding per week',
-        'DevOps cloud migration & Lambdas support',
-        'Agile Scrum participation',
-        'Junior engineer code reviews & pair programming',
-        'Priority Slack & email communication',
+        'Small bug fixes & emergency patch deployments',
+        'UI/UX alignment & responsive layout fixes',
+        'API error debugging & CORS resolution',
+        'Database query tuning & state fix',
+        'Hourly billing with transparent progress logs',
+      ],
+      featured: false,
+    },
+    {
+      name: 'Code Review & Security Audit',
+      price: 'Custom USD ($)',
+      period: 'based on repo size',
+      desc: 'Deep refactoring audit, API performance check, and database constraint analysis for scaling.',
+      features: [
+        'Security & dependency vulnerability scanning',
+        'Database query optimization (Postgres/Firebase/MongoDB)',
+        'Code refactoring & architecture roadmap',
+        '1-hour architecture walkthrough call',
+        'Full stack & cloud infrastructure audit report',
       ],
       featured: false,
     },
@@ -53,7 +53,7 @@ export default function ServicesTiers() {
       <div className="container">
         <h2 className="section-title">Consulting Services & Tiers</h2>
         <p className="section-subtitle">
-          Professional, outcomes-focused engineering plans designed to launch products, modernize tech infrastructure, and scale team velocity.
+          Transparent USD ($) pricing. Flexible project-based pricing tailored to your project size & scope, with hourly options for small bug fixes.
         </p>
 
         <div className="grid-3 services-grid">
@@ -85,7 +85,7 @@ export default function ServicesTiers() {
                 className={`btn ${tier.featured ? 'btn-primary' : 'btn-secondary'}`}
                 style={{ width: '100%', marginTop: 'auto', display: 'block', textAlign: 'center' }}
               >
-                Select Package
+                Get Custom Quote
               </a>
             </div>
           ))}
