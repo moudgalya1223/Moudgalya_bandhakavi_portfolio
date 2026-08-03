@@ -28,6 +28,16 @@ export default function ClientPortal() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [clientLeads, setClientLeads] = useState<Lead[]>([]);
 
+  // State for Proposal Modal (Declared at top of component for Rules of Hooks)
+  const [showProposalModal, setShowProposalModal] = useState(false);
+  const [proposalTitle, setProposalTitle] = useState('');
+  const [proposalStack, setProposalStack] = useState('Full-Stack Web App');
+  const [proposalBudget, setProposalBudget] = useState('Project-based USD ($)');
+  const [proposalTimeline, setProposalTimeline] = useState('2-4 Weeks');
+  const [proposalDesc, setProposalDesc] = useState('');
+  const [submittingProposal, setSubmittingProposal] = useState(false);
+  const [proposalSuccess, setProposalSuccess] = useState(false);
+
   useEffect(() => {
     const unsubAuth = onAuthChange((currentUser) => {
       if (!currentUser) {
@@ -99,16 +109,6 @@ export default function ClientPortal() {
       stripePaymentLink: 'https://checkout.stripe.com/pay/mock_link',
     },
   ];
-
-  // State for Proposal Modal
-  const [showProposalModal, setShowProposalModal] = useState(false);
-  const [proposalTitle, setProposalTitle] = useState('');
-  const [proposalStack, setProposalStack] = useState('Full-Stack Web App');
-  const [proposalBudget, setProposalBudget] = useState('Project-based USD ($)');
-  const [proposalTimeline, setProposalTimeline] = useState('2-4 Weeks');
-  const [proposalDesc, setProposalDesc] = useState('');
-  const [submittingProposal, setSubmittingProposal] = useState(false);
-  const [proposalSuccess, setProposalSuccess] = useState(false);
 
   const handleProposalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
