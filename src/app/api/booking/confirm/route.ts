@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { sendBookingEmails } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,10 +14,10 @@ export async function POST(request: NextRequest) {
 
     const leadId = 'lead-' + Date.now();
 
-    // 1. Non-blocking background Firestore attempt with 1.5s timeout race
-    const saveToFirestore = async () => {
+    // 1. Non-blocking background Firestore save & email dispatch
+    const saveAndNotify = async () => {
       try {
-        await Promise.race([
+        await Promise.allSettled([
           addDoc(collection(db, 'leads'), {
             name,
             email,
@@ -28,34 +29,27 @@ export async function POST(request: NextRequest) {
             createdAt: serverTimestamp(),
             notes: `Meeting date requested: ${meetingDate || 'None'}. Budget: ${budget}. Goals: ${goals}`,
           }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 1500)),
+          sendBookingEmails({
+            name,
+            email,
+            projectType,
+            budget,
+            goals,
+            meetingDate: meetingDate || 'Scheduled Consultation Call',
+          }),
         ]);
       } catch (e) {
-        console.log('Async Firestore booking notification handled silently:', e);
+        console.log('Async booking notification handled silently:', e);
       }
     };
 
-    saveToFirestore();
+    saveAndNotify();
 
     const recipientEmail = 'dattumoudgalyabandhakavi@gmail.com';
-    const mailtoSubject = encodeURIComponent(`[NEW CONSULTATION BOOKING] ${name} - ${projectType}`);
-    const mailtoBody = encodeURIComponent(
-      `New Consultation Call Booked!\n\n` +
-      `Client Name: ${name}\n` +
-      `Client Email: ${email}\n` +
-      `Requested Date/Time: ${meetingDate}\n` +
-      `Project Type: ${projectType}\n` +
-      `Budget: ${budget}\n\n` +
-      `Project Goals:\n${goals}\n`
-    );
-    const mailtoLink = `mailto:${recipientEmail}?subject=${mailtoSubject}&body=${mailtoBody}`;
-
-    // Return instant success along with notification details and automated confirmation metadata
     return NextResponse.json({ 
       success: true, 
       leadId,
       recipientEmail,
-      mailtoLink,
       confirmationMessage: `Thank you, ${name}! Your consultation booking request has been dispatched to ${recipientEmail} and confirmed for ${meetingDate}.`
     });
   } catch (error: any) {

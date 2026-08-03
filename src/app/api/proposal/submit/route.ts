@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { sendProposalEmails } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,10 +14,10 @@ export async function POST(request: NextRequest) {
 
     const proposalId = 'prop-' + Date.now();
 
-    // 1. Non-blocking background Firestore attempt with 1.5s timeout race
-    const saveToFirestore = async () => {
+    // 1. Non-blocking background Firestore save & email dispatch
+    const saveAndNotify = async () => {
       try {
-        await Promise.race([
+        await Promise.allSettled([
           addDoc(collection(db, 'leads'), {
             name: clientName || clientEmail,
             email: clientEmail,
@@ -27,34 +28,28 @@ export async function POST(request: NextRequest) {
             createdAt: serverTimestamp(),
             notes: `Submitted from Client Portal by ${clientEmail}`,
           }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 1500)),
+          sendProposalEmails({
+            clientName: clientName || clientEmail,
+            clientEmail,
+            title,
+            description,
+            stack,
+            budget,
+            timeline,
+          }),
         ]);
       } catch (e) {
-        console.log('Async Firestore proposal notification handled silently:', e);
+        console.log('Async proposal notification handled silently:', e);
       }
     };
 
-    saveToFirestore();
+    saveAndNotify();
 
     const recipientEmail = 'dattumoudgalyabandhakavi@gmail.com';
-    const mailtoSubject = encodeURIComponent(`[NEW CLIENT PROPOSAL] ${title} from ${clientName || clientEmail}`);
-    const mailtoBody = encodeURIComponent(
-      `New Project Proposal Received!\n\n` +
-      `Client Name: ${clientName || 'N/A'}\n` +
-      `Client Email: ${clientEmail}\n` +
-      `Project Title: ${title}\n` +
-      `Estimated Budget: ${budget || 'Project-based USD'}\n` +
-      `Target Timeline: ${timeline || 'Flexible'}\n` +
-      `Preferred Stack: ${stack || 'Full-Stack'}\n\n` +
-      `Project Details & Requirements:\n${description}\n`
-    );
-    const mailtoLink = `mailto:${recipientEmail}?subject=${mailtoSubject}&body=${mailtoBody}`;
-
     return NextResponse.json({ 
       success: true, 
       proposalId, 
-      recipient: recipientEmail,
-      mailtoLink 
+      recipient: recipientEmail 
     });
   } catch (error: any) {
     console.error('Proposal API submission error:', error);
