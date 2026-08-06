@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Award, Sparkles } from 'lucide-react';
+import { Award, Sparkles, ExternalLink, Zap } from 'lucide-react';
 
 export default function HeroSection() {
   return (
@@ -25,11 +25,22 @@ export default function HeroSection() {
               I am Moudgalya Bandhakavi, a Full-Stack & AI Engineer with 4 years of experience building secure fintech platforms, migrating enterprise services to AWS Cloud, and implementing custom computer vision systems.
             </p>
 
-            <div className="hero-buttons" style={{ marginBottom: '32px' }}>
-              <a href="#booking" className="btn btn-primary">
-                Book a Consultation
+            <div className="hero-buttons" style={{ marginBottom: '32px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <a 
+                href="https://topmate.io/bandhakavi_dattamoudglya" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="btn-topmate"
+                style={{ padding: '12px 22px', fontSize: '0.95rem' }}
+              >
+                <Zap size={16} />
+                <span>Book 1:1 on Topmate</span>
+                <ExternalLink size={14} />
               </a>
-              <Link href="/login" className="btn btn-secondary">
+              <a href="#booking" className="btn btn-primary" style={{ padding: '12px 22px', fontSize: '0.95rem' }}>
+                Book Consultation
+              </a>
+              <Link href="/login" className="btn btn-secondary" style={{ padding: '12px 22px', fontSize: '0.95rem' }}>
                 Client Login
               </Link>
             </div>

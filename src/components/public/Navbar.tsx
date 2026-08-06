@@ -28,6 +28,7 @@ export default function Navbar() {
           <a href="#expertise">Expertise</a>
           <a href="#projects">Projects</a>
           <a href="#services">Services</a>
+          <a href="https://topmate.io/bandhakavi_dattamoudglya" target="_blank" rel="noopener noreferrer" style={{ color: '#ff8c38', fontWeight: 600 }}>Topmate 1:1</a>
           <a href="#booking" className="nav-cta">Book Consultation</a>
           <Link href="/login" className="nav-login" style={{ borderColor: 'rgba(6,182,212,0.3)', color: 'var(--accent-cyan)' }}>
             <UserCheck size={16} />
@@ -51,6 +52,7 @@ export default function Navbar() {
           <a href="#expertise" onClick={() => setIsOpen(false)}>Expertise</a>
           <a href="#projects" onClick={() => setIsOpen(false)}>Projects</a>
           <a href="#services" onClick={() => setIsOpen(false)}>Services</a>
+          <a href="https://topmate.io/bandhakavi_dattamoudglya" target="_blank" rel="noopener noreferrer" onClick={() => setIsOpen(false)} style={{ color: '#ff8c38', fontWeight: 600 }}>Book 1:1 on Topmate</a>
           <a href="#booking" className="mobile-cta" onClick={() => setIsOpen(false)}>Book Consultation</a>
           <Link href="/login" className="mobile-login" onClick={() => setIsOpen(false)}>
             Client Portal Login

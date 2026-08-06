@@ -80,13 +80,23 @@ export default function ServicesTiers() {
                 ))}
               </ul>
 
-              <a 
-                href="#booking" 
-                className={`btn ${tier.featured ? 'btn-primary' : 'btn-secondary'}`}
-                style={{ width: '100%', marginTop: 'auto', display: 'block', textAlign: 'center' }}
-              >
-                Get Custom Quote
-              </a>
+              <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                <a 
+                  href="#booking" 
+                  className={`btn ${tier.featured ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ width: '100%', textAlign: 'center' }}
+                >
+                  Get Custom Quote
+                </a>
+                <a 
+                  href="https://topmate.io/bandhakavi_dattamoudglya" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ width: '100%', textAlign: 'center', fontSize: '0.85rem', color: '#ff8c38', fontWeight: 600, padding: '4px 0', textDecoration: 'none' }}
+                >
+                  Or Book 1:1 on Topmate →
+                </a>
+              </div>
             </div>
           ))}
         </div>

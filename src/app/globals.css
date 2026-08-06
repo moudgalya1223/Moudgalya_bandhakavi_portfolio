@@ -1026,6 +1026,111 @@ section {
   cursor: grabbing;
 }
 
+/* Topmate Integration Styles */
+.topmate-card {
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.08) 0%, rgba(124, 58, 237, 0.08) 100%);
+  border: 1px solid rgba(255, 120, 30, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(255, 107, 0, 0.08);
+  transition: var(--transition-normal);
+}
+.topmate-card:hover {
+  border-color: rgba(255, 120, 30, 0.5);
+  box-shadow: 0 12px 40px rgba(255, 107, 0, 0.15);
+}
+.topmate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(255, 107, 0, 0.15);
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  color: #ff8c38;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+}
+.topmate-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.topmate-desc {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  max-width: 650px;
+}
+.topmate-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.topmate-feature-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(19, 25, 46, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.btn-topmate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #ff6b00 0%, #e05300 100%);
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 14px 28px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 20px rgba(255, 107, 0, 0.35);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+}
+.btn-topmate:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(255, 107, 0, 0.5);
+  background: linear-gradient(135deg, #ff7a1a 0%, #f05e0a 100%);
+  color: #ffffff !important;
+}
+
+.or-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 36px 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.or-divider::before,
+.or-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-color);
+}
+.or-divider span {
+  padding: 0 16px;
+}
+
 
 
 
