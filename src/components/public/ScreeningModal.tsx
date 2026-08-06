@@ -40,7 +40,7 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
     const endDateObj = new Date(new Date(`${date} ${time}`).getTime() + 30 * 60000);
     const endIso = endDateObj.toISOString().replace(/-|:|\.\d\d\d/g, '');
 
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${startIso}/${endIso}&add=dattumoudgalyabandhakavi@gmail.com,${encodeURIComponent(email)}`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${startIso}/${endIso}&add=dattamoudgalyabandhakavi@gmail.com,${encodeURIComponent(email)}`;
   };
 
   const handleDownloadICS = () => {
@@ -61,9 +61,9 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
       `DTEND:${formatICSDate(endDateObj)}`,
       `SUMMARY:Consultation Call: Moudgalya Bandhakavi & ${name}`,
       `DESCRIPTION:Client: ${name} (${email})\\nProject Type: ${projectType}\\nBudget: ${budget}\\nGoals: ${goals}`,
-      'ORGANIZER;CN=Moudgalya Bandhakavi:mailto:dattumoudgalyabandhakavi@gmail.com',
+      'ORGANIZER;CN=Moudgalya Bandhakavi:mailto:dattamoudgalyabandhakavi@gmail.com',
       `ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;CN=${name}:mailto:${email}`,
-      'ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Moudgalya:mailto:dattumoudgalyabandhakavi@gmail.com',
+      'ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Moudgalya:mailto:dattamoudgalyabandhakavi@gmail.com',
       'STATUS:CONFIRMED',
       'END:VEVENT',
       'END:VCALENDAR'
@@ -97,8 +97,7 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
         meetingDate: `${date} at ${time}`,
       });
 
-      // Also trigger API handler
-      fetch('/api/booking/confirm', {
+      await fetch('/api/booking/confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -109,7 +108,7 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
           goals,
           meetingDate: `${date} at ${time}`,
         }),
-      }).catch(() => {});
+      });
 
       setSuccess(true);
     } catch (err: any) {
@@ -242,7 +241,7 @@ export default function ScreeningModal({ date, time, onClose }: ScreeningModalPr
               Consultation Scheduled!
             </h2>
             <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '20px', fontSize: '0.9rem' }}>
-              Thank you, <strong>{name}</strong>! Your consultation request has been submitted to <strong>dattumoudgalyabandhakavi@gmail.com</strong>. A confirmation and calendar invite have been generated for <strong>{formattedDate} at {time}</strong>.
+              Thank you, <strong>{name}</strong>! Your consultation request has been submitted to <strong>dattamoudgalyabandhakavi@gmail.com</strong>. A confirmation and calendar invite have been generated for <strong>{formattedDate} at {time}</strong>.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>

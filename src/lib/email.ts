@@ -2,19 +2,28 @@ import nodemailer from 'nodemailer';
 
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465', 10);
-const SMTP_USER = process.env.SMTP_USER || 'dattumoudgalyabandhakavi@gmail.com';
-const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS || '';
+const SMTP_USER = process.env.SMTP_USER || 'dattamoudgalyabandhakavi@gmail.com';
+const SMTP_PASS = (process.env.SMTP_PASS || process.env.EMAIL_PASS || '').replace(/\s+/g, '');
 
-// Create reusable transporter object using SMTP transport
-const transporter = nodemailer.createTransport({
-  host: SMTP_HOST,
-  port: SMTP_PORT,
-  secure: SMTP_PORT === 465,
-  auth: {
-    user: SMTP_USER,
-    pass: SMTP_PASS,
-  },
-});
+const transporter = nodemailer.createTransport(
+  SMTP_HOST === 'smtp.gmail.com'
+    ? {
+        service: 'gmail',
+        auth: {
+          user: SMTP_USER,
+          pass: SMTP_PASS,
+        },
+      }
+    : {
+        host: SMTP_HOST,
+        port: SMTP_PORT,
+        secure: SMTP_PORT === 465,
+        auth: {
+          user: SMTP_USER,
+          pass: SMTP_PASS,
+        },
+      }
+);
 
 interface BookingEmailParams {
   name: string;
@@ -38,7 +47,7 @@ interface ProposalEmailParams {
 // ─── SEND BOOKING EMAILS ──────────────────────────────────────────────────
 export async function sendBookingEmails(params: BookingEmailParams) {
   const { name, email, projectType, budget, goals, meetingDate } = params;
-  const developerEmail = 'dattumoudgalyabandhakavi@gmail.com';
+  const developerEmail = SMTP_USER;
 
   if (!SMTP_PASS) {
     console.warn('⚠️ SMTP_PASS is missing in environment variables. Email sending skipped.');
@@ -165,7 +174,7 @@ export async function sendBookingEmails(params: BookingEmailParams) {
 // ─── SEND PROPOSAL EMAILS ─────────────────────────────────────────────────
 export async function sendProposalEmails(params: ProposalEmailParams) {
   const { clientName, clientEmail, title, description, stack, budget, timeline } = params;
-  const developerEmail = 'dattumoudgalyabandhakavi@gmail.com';
+  const developerEmail = SMTP_USER;
 
   if (!SMTP_PASS) {
     console.warn('⚠️ SMTP_PASS is missing in environment variables. Email sending skipped.');

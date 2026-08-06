@@ -441,7 +441,7 @@ export default function ClientPortal() {
                   Submit Project Proposal
                 </h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '20px' }}>
-                  Submit your request directly to lead developer <strong>dattumoudgalyabandhakavi@gmail.com</strong>.
+                  Submit your request directly to lead developer <strong>dattamoudgalyabandhakavi@gmail.com</strong>.
                 </p>
 
                 <form onSubmit={handleProposalSubmit}>
@@ -536,7 +536,7 @@ export default function ClientPortal() {
                   Proposal Submitted!
                 </h2>
                 <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '24px', fontSize: '0.9rem' }}>
-                  Thank you! Your proposal <strong>&quot;{proposalTitle}&quot;</strong> has been logged into your dashboard and dispatched to <strong>dattumoudgalyabandhakavi@gmail.com</strong>.
+                  Thank you! Your proposal <strong>&quot;{proposalTitle}&quot;</strong> has been logged into your dashboard and dispatched to <strong>dattamoudgalyabandhakavi@gmail.com</strong>.
                 </p>
 
                 <button className="btn btn-secondary" onClick={() => setShowProposalModal(false)} style={{ width: '100%' }}>

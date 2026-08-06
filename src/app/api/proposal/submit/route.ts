@@ -43,9 +43,9 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    saveAndNotify();
+    await saveAndNotify();
 
-    const recipientEmail = 'dattumoudgalyabandhakavi@gmail.com';
+    const recipientEmail = process.env.SMTP_USER || 'dattamoudgalyabandhakavi@gmail.com';
     return NextResponse.json({ 
       success: true, 
       proposalId, 
