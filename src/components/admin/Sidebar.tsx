@@ -3,10 +3,13 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from '@/lib/auth';
+import { useState, useEffect } from 'react';
+import { getLeetCodeSettings, subscribeToLeetCodeSettings } from '@/lib/firestore';
 import { 
   LayoutDashboard, 
   FolderGit2, 
   CheckSquare, 
+  Code2,
   CircleDollarSign, 
   Users2, 
   Settings as SettingsIcon,
@@ -17,11 +20,19 @@ import {
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [leetcodeEnabled, setLeetcodeEnabled] = useState(false);
+
+  useEffect(() => {
+    return subscribeToLeetCodeSettings((s) => {
+      setLeetcodeEnabled(s.featureEnabled);
+    });
+  }, []);
 
   const links = [
     { label: 'Overview', href: '/admin', icon: <LayoutDashboard size={20} /> },
     { label: 'Projects', href: '/admin/projects', icon: <FolderGit2 size={20} /> },
     { label: 'Tasks', href: '/admin/tasks', icon: <CheckSquare size={20} /> },
+    ...(leetcodeEnabled ? [{ label: 'LeetCode Board', href: '/admin/leetcode', icon: <Code2 size={20} /> }] : []),
     { label: 'Finance', href: '/admin/finance', icon: <CircleDollarSign size={20} /> },
     { label: 'Clients', href: '/admin/clients', icon: <Users2 size={20} /> },
     { label: 'Settings', href: '/admin/settings', icon: <SettingsIcon size={20} /> },

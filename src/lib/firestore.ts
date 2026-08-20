@@ -67,7 +67,76 @@ export interface Invoice {
   createdAt?: any;
 }
 
+export interface LeetCodeProblem {
+  id?: string;
+  title: string;
+  titleSlug: string;
+  url?: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  category?: string;
+  tags?: string[];
+  status: 'todo' | 'inprogress' | 'done';
+  notes?: string;
+  order: number;
+  solvedAt?: string;
+  lastSubmissionLang?: string;
+  attemptsCount?: number;
+  createdAt?: any;
+}
+
+export interface LeetCodeSettings {
+  username: string;
+  autoSync: boolean;
+  featureEnabled: boolean;
+  lastSynced?: string;
+}
+
 // ─── Initial Mock/Seed Data for Instant UI Fallback ─────────────────────────
+
+const initialLeetCodeProblems: LeetCodeProblem[] = [
+  {
+    id: 'lc-1',
+    title: 'Two Sum',
+    titleSlug: 'two-sum',
+    url: 'https://leetcode.com/problems/two-sum/',
+    difficulty: 'Easy',
+    tags: ['Array', 'Hash Table'],
+    status: 'inprogress',
+    order: 1,
+    attemptsCount: 2,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'lc-2',
+    title: '3Sum',
+    titleSlug: '3sum',
+    url: 'https://leetcode.com/problems/3sum/',
+    difficulty: 'Medium',
+    tags: ['Array', 'Two Pointers', 'Sorting'],
+    status: 'todo',
+    order: 2,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'lc-3',
+    title: 'LRU Cache',
+    titleSlug: 'lru-cache',
+    url: 'https://leetcode.com/problems/lru-cache/',
+    difficulty: 'Medium',
+    tags: ['Hash Table', 'Linked List', 'Design'],
+    status: 'done',
+    solvedAt: '2026-08-19 14:30',
+    lastSubmissionLang: 'Python3',
+    order: 3,
+    createdAt: new Date().toISOString(),
+  },
+];
+
+const initialLeetCodeSettings: LeetCodeSettings = {
+  username: '',
+  autoSync: true,
+  featureEnabled: true,
+};
 
 const initialLeads: Lead[] = [
   {
@@ -503,3 +572,125 @@ export async function deleteInvoice(id: string) {
     deleteDoc(doc(db, 'invoices', id)).catch(() => {});
   } catch {}
 }
+
+// ─── LEETCODE PROBLEMS ──────────────────────────────────────────────────────
+
+export async function addLeetCodeProblem(problem: Omit<LeetCodeProblem, 'id' | 'createdAt'>) {
+  const current = getLocal<LeetCodeProblem>('leetcode_store', initialLeetCodeProblems);
+  
+  // Check if problem with same titleSlug already exists
+  const existing = current.find(p => p.titleSlug === problem.titleSlug);
+  if (existing) {
+    if (existing.status !== problem.status) {
+      await updateLeetCodeProblem(existing.id!, { status: problem.status });
+    }
+    return existing;
+  }
+
+  const newProblem: LeetCodeProblem = {
+    ...problem,
+    id: 'lc-' + Date.now(),
+    createdAt: new Date().toISOString(),
+  };
+
+  const updated = [...current, newProblem];
+  setLocal('leetcode_store', updated);
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('leetcode_updated'));
+
+  try {
+    addDoc(collection(db, 'leetcode_problems'), { ...problem, createdAt: serverTimestamp() }).catch(() => {});
+  } catch {}
+
+  return newProblem;
+}
+
+export function subscribeToLeetCodeProblems(cb: (problems: LeetCodeProblem[]) => void) {
+  const notify = () => cb(getLocal<LeetCodeProblem>('leetcode_store', initialLeetCodeProblems));
+  notify();
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('leetcode_updated', notify);
+  }
+
+  try {
+    const unsub = onSnapshot(
+      query(collection(db, 'leetcode_problems'), orderBy('order', 'asc')),
+      (snap) => {
+        if (!snap.empty) {
+          const fsProblems = snap.docs.map((d) => ({ id: d.id, ...d.data() } as LeetCodeProblem));
+          cb(fsProblems);
+          setLocal('leetcode_store', fsProblems);
+        }
+      },
+      () => {}
+    );
+    return () => {
+      unsub();
+      if (typeof window !== 'undefined') window.removeEventListener('leetcode_updated', notify);
+    };
+  } catch {
+    return () => {
+      if (typeof window !== 'undefined') window.removeEventListener('leetcode_updated', notify);
+    };
+  }
+}
+
+export function getLeetCodeProblemsSync(): LeetCodeProblem[] {
+  return getLocal<LeetCodeProblem>('leetcode_store', initialLeetCodeProblems);
+}
+
+export async function updateLeetCodeProblem(id: string, data: Partial<LeetCodeProblem>) {
+  const current = getLocal<LeetCodeProblem>('leetcode_store', initialLeetCodeProblems);
+  const updated = current.map((p) => (p.id === id ? { ...p, ...data } : p));
+  setLocal('leetcode_store', updated);
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('leetcode_updated'));
+
+  try {
+    updateDoc(doc(db, 'leetcode_problems', id), data).catch(() => {});
+  } catch {}
+}
+
+export async function deleteLeetCodeProblem(id: string) {
+  const current = getLocal<LeetCodeProblem>('leetcode_store', initialLeetCodeProblems);
+  const updated = current.filter((p) => p.id !== id);
+  setLocal('leetcode_store', updated);
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('leetcode_updated'));
+
+  try {
+    deleteDoc(doc(db, 'leetcode_problems', id)).catch(() => {});
+  } catch {}
+}
+
+// ─── LEETCODE SETTINGS & FEATURE FLAG ─────────────────────────────────────
+
+export function getLeetCodeSettings(): LeetCodeSettings {
+  if (typeof window === 'undefined') return initialLeetCodeSettings;
+  try {
+    const item = localStorage.getItem('leetcode_settings');
+    return item ? JSON.parse(item) : initialLeetCodeSettings;
+  } catch {
+    return initialLeetCodeSettings;
+  }
+}
+
+export async function saveLeetCodeSettings(settings: Partial<LeetCodeSettings>) {
+  const current = getLeetCodeSettings();
+  const updated = { ...current, ...settings };
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('leetcode_settings', JSON.stringify(updated));
+    window.dispatchEvent(new Event('leetcode_settings_updated'));
+  }
+  return updated;
+}
+
+export function subscribeToLeetCodeSettings(cb: (settings: LeetCodeSettings) => void) {
+  const notify = () => cb(getLeetCodeSettings());
+  notify();
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('leetcode_settings_updated', notify);
+    return () => window.removeEventListener('leetcode_settings_updated', notify);
+  }
+  return () => {};
+}
+

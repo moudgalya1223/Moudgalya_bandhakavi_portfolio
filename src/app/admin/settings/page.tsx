@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Calendar, CreditCard, Shield, User, Save, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calendar, CreditCard, Shield, User, Save, CheckCircle2, Code2 } from 'lucide-react';
+import { getLeetCodeSettings, saveLeetCodeSettings, subscribeToLeetCodeSettings } from '@/lib/firestore';
 
 export default function SettingsPage() {
   const [name, setName] = useState('Moudgalya Bandhakavi');
@@ -84,23 +85,70 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Stripe Invoicing Integration */}
+          {/* LeetCode Taskboard Integration */}
           <div className="glass-card">
             <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <CreditCard size={18} className="text-cyan" />
-              <span>Stripe Payments</span>
+              <Code2 size={18} className="text-cyan" />
+              <span>LeetCode Kanban Integration</span>
             </h2>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '20px' }}>
-              Connected to generate checkout payment links for issued client invoices.
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '16px' }}>
+              Enable or disable the LeetCode Taskboard feature flag. Auto-syncs problem progress with LeetCode.com.
             </p>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 16px', background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: 'var(--radius-sm)', color: 'var(--accent-emerald)', fontSize: '0.9rem', fontWeight: 600 }}>
-              <CheckCircle2 size={16} />
-              <span>Stripe Invoicing Active (Developer Mode)</span>
-            </div>
+            <LeetCodeSettingsToggle />
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function LeetCodeSettingsToggle() {
+  const [settings, setSettings] = useState(getLeetCodeSettings());
+  const [username, setUsername] = useState(settings.username || '');
+
+  useEffect(() => {
+    return subscribeToLeetCodeSettings(setSettings);
+  }, []);
+
+  const toggleFlag = async () => {
+    await saveLeetCodeSettings({ featureEnabled: !settings.featureEnabled });
+  };
+
+  const handleSaveUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await saveLeetCodeSettings({ username: username.trim() });
+    alert('LeetCode username saved!');
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-sm)', marginBottom: '16px', border: '1px solid var(--border-color)' }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Feature Flag: LeetCode Board</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Status: {settings.featureEnabled ? 'ENABLED' : 'DISABLED'}</div>
+        </div>
+        <button
+          onClick={toggleFlag}
+          className={`btn ${settings.featureEnabled ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ padding: '6px 14px', fontSize: '0.8rem' }}
+        >
+          {settings.featureEnabled ? 'Disable Feature' : 'Enable Feature'}
+        </button>
+      </div>
+
+      {settings.featureEnabled && (
+        <form onSubmit={handleSaveUser} style={{ display: 'flex', gap: '10px' }}>
+          <input
+            type="text"
+            className="form-input"
+            placeholder="LeetCode Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <button type="submit" className="btn btn-secondary" style={{ whiteSpace: 'nowrap' }}>Save Username</button>
+        </form>
+      )}
     </div>
   );
 }
