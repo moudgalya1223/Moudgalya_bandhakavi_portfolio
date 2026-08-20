@@ -6,6 +6,7 @@ import {
   addLeetCodeProblem,
   updateLeetCodeProblem,
   deleteLeetCodeProblem,
+  clearAllLeetCodeProblems,
   getLeetCodeSettings,
   saveLeetCodeSettings,
   subscribeToLeetCodeSettings,
@@ -679,6 +680,26 @@ export default function LeetCodeDashboardPage() {
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: flagInput ? '#10b981' : 'var(--text-muted)' }}
                 >
                   {flagInput ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
+                </button>
+              </div>
+
+              <div className="form-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: 'var(--radius-sm)' }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#ef4444' }}>Clear Demo / Saved Cards</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Remove all sample problem cards from your local board</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (confirm('Clear all problem cards from the board?')) {
+                      await clearAllLeetCodeProblems();
+                      setShowSettingsModal(false);
+                    }
+                  }}
+                  className="btn"
+                  style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '6px 12px', fontSize: '0.8rem' }}
+                >
+                  Clear Board
                 </button>
               </div>
 

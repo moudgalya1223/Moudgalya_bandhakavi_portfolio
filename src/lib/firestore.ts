@@ -93,44 +93,7 @@ export interface LeetCodeSettings {
 
 // ─── Initial Mock/Seed Data for Instant UI Fallback ─────────────────────────
 
-const initialLeetCodeProblems: LeetCodeProblem[] = [
-  {
-    id: 'lc-1',
-    title: 'Two Sum',
-    titleSlug: 'two-sum',
-    url: 'https://leetcode.com/problems/two-sum/',
-    difficulty: 'Easy',
-    tags: ['Array', 'Hash Table'],
-    status: 'inprogress',
-    order: 1,
-    attemptsCount: 2,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'lc-2',
-    title: '3Sum',
-    titleSlug: '3sum',
-    url: 'https://leetcode.com/problems/3sum/',
-    difficulty: 'Medium',
-    tags: ['Array', 'Two Pointers', 'Sorting'],
-    status: 'todo',
-    order: 2,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'lc-3',
-    title: 'LRU Cache',
-    titleSlug: 'lru-cache',
-    url: 'https://leetcode.com/problems/lru-cache/',
-    difficulty: 'Medium',
-    tags: ['Hash Table', 'Linked List', 'Design'],
-    status: 'done',
-    solvedAt: '2026-08-19 14:30',
-    lastSubmissionLang: 'Python3',
-    order: 3,
-    createdAt: new Date().toISOString(),
-  },
-];
+const initialLeetCodeProblems: LeetCodeProblem[] = [];
 
 const initialLeetCodeSettings: LeetCodeSettings = {
   username: '',
@@ -659,6 +622,11 @@ export async function deleteLeetCodeProblem(id: string) {
   try {
     deleteDoc(doc(db, 'leetcode_problems', id)).catch(() => {});
   } catch {}
+}
+
+export async function clearAllLeetCodeProblems() {
+  setLocal('leetcode_store', []);
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('leetcode_updated'));
 }
 
 // ─── LEETCODE SETTINGS & FEATURE FLAG ─────────────────────────────────────
