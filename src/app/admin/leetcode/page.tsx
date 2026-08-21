@@ -13,6 +13,7 @@ import {
   LeetCodeProblem,
   LeetCodeSettings,
 } from '@/lib/firestore';
+import LeetCodeBurndownChart from '@/components/admin/LeetCodeBurndownChart';
 import {
   Code2,
   Plus,
@@ -549,6 +550,9 @@ export default function LeetCodeDashboardPage() {
           </button>
         </div>
       </div>
+
+      {/* Recurrent State Burndown Chart & Forecast */}
+      <LeetCodeBurndownChart problems={problems} />
 
       {/* Metrics Banner */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '24px' }}>
