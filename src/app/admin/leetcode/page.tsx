@@ -33,7 +33,29 @@ import {
   Check,
   ToggleLeft,
   ToggleRight,
+  Flame,
+  CalendarCheck,
 } from 'lucide-react';
+
+const isSameDay = (dateStr?: string) => {
+  if (!dateStr) return false;
+  try {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      const today = new Date();
+      return (
+        d.getDate() === today.getDate() &&
+        d.getMonth() === today.getMonth() &&
+        d.getFullYear() === today.getFullYear()
+      );
+    }
+    const todayLocale = new Date().toLocaleDateString();
+    const dateLocale = dateStr.split(',')[0].trim();
+    return todayLocale === dateLocale || dateStr.includes(todayLocale);
+  } catch {
+    return false;
+  }
+};
 
 export default function LeetCodeDashboardPage() {
   const [problems, setProblems] = useState<LeetCodeProblem[]>([]);
@@ -49,7 +71,7 @@ export default function LeetCodeDashboardPage() {
 
   // Add problem form
   const [inputUrl, setInputUrl] = useState('');
-  const [addStatus, setAddStatus] = useState<'todo' | 'inprogress'>('inprogress');
+  const [addStatus, setAddStatus] = useState<LeetCodeProblem['status']>('inprogress');
   const [addLoading, setAddLoading] = useState(false);
   const [addError, setAddError] = useState('');
 
@@ -61,6 +83,7 @@ export default function LeetCodeDashboardPage() {
   // Filter & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
+  const [showTodayOnly, setShowTodayOnly] = useState(false);
   const [copiedScript, setCopiedScript] = useState(false);
 
   // Subscribe to Firestore / LocalStorage
@@ -196,6 +219,7 @@ export default function LeetCodeDashboardPage() {
         tags: data.tags,
         status: addStatus, // defaults to inprogress as requested
         order: Date.now(),
+        solvedAt: addStatus === 'done' ? new Date().toISOString() : undefined,
       });
 
       setInputUrl('');
@@ -209,7 +233,14 @@ export default function LeetCodeDashboardPage() {
 
   // Move status handler
   const handleMoveStatus = async (id: string, newStatus: LeetCodeProblem['status']) => {
-    await updateLeetCodeProblem(id, { status: newStatus });
+    const patch: Partial<LeetCodeProblem> = { status: newStatus };
+    if (newStatus === 'done') {
+      const existing = problems.find((p) => p.id === id);
+      if (!existing?.solvedAt) {
+        patch.solvedAt = new Date().toISOString();
+      }
+    }
+    await updateLeetCodeProblem(id, patch);
   };
 
   // Delete problem handler
@@ -302,11 +333,12 @@ export default function LeetCodeDashboardPage() {
     );
   }
 
-  // Filter problems based on search and difficulty
+  // Filter problems based on search, difficulty, and today filter
   const filteredProblems = problems.filter((p) => {
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || p.titleSlug.includes(searchQuery.toLowerCase()) || (p.tags && p.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())));
     const matchesDiff = difficultyFilter === 'all' || p.difficulty.toLowerCase() === difficultyFilter.toLowerCase();
-    return matchesSearch && matchesDiff;
+    const matchesToday = !showTodayOnly || (p.status === 'done' && isSameDay(p.solvedAt || p.createdAt));
+    return matchesSearch && matchesDiff && matchesToday;
   });
 
   const todoTasks = filteredProblems.filter((p) => p.status === 'todo');
@@ -316,6 +348,7 @@ export default function LeetCodeDashboardPage() {
   // Stats calculation
   const totalCount = problems.length;
   const doneCount = problems.filter((p) => p.status === 'done').length;
+  const todayDoneCount = problems.filter((p) => p.status === 'done' && isSameDay(p.solvedAt || p.createdAt)).length;
   const inProgressCount = problems.filter((p) => p.status === 'inprogress').length;
   const easyCount = problems.filter((p) => p.difficulty === 'Easy').length;
   const mediumCount = problems.filter((p) => p.difficulty === 'Medium').length;
@@ -421,10 +454,18 @@ export default function LeetCodeDashboardPage() {
                 )}
 
                 {/* Status indicator & language */}
-                {p.status === 'done' && p.solvedAt && (
-                  <div style={{ fontSize: '0.7rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '10px' }}>
-                    <CheckCircle2 size={12} />
-                    <span>Solved {p.lastSubmissionLang ? `in ${p.lastSubmissionLang}` : ''}</span>
+                {p.status === 'done' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                    <div style={{ fontSize: '0.7rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <CheckCircle2 size={12} />
+                      <span>Solved {p.lastSubmissionLang ? `in ${p.lastSubmissionLang}` : ''}</span>
+                    </div>
+                    {isSameDay(p.solvedAt || p.createdAt) && (
+                      <span style={{ fontSize: '0.65rem', fontWeight: 800, background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '1px 6px', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.3)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                        <Flame size={10} />
+                        Today
+                      </span>
+                    )}
                   </div>
                 )}
 
@@ -510,7 +551,30 @@ export default function LeetCodeDashboardPage() {
       </div>
 
       {/* Metrics Banner */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '24px' }}>
+        <div
+          className="glass-card"
+          style={{
+            padding: '16px 20px',
+            border: '1px solid rgba(16, 185, 129, 0.4)',
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.05) 100%)',
+            boxShadow: '0 4px 20px rgba(16, 185, 129, 0.1)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Completed Today
+            </div>
+            <div style={{ background: 'rgba(16, 185, 129, 0.2)', padding: '4px 6px', borderRadius: '6px', color: '#10b981', display: 'flex', alignItems: 'center' }}>
+              <Flame size={14} />
+            </div>
+          </div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800, marginTop: '4px', color: '#10b981', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            <span>{todayDoneCount}</span>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>today</span>
+          </div>
+        </div>
+
         <div className="glass-card" style={{ padding: '16px 20px' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>Total Tracked</div>
           <div style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '4px' }}>{totalCount}</div>
@@ -550,8 +614,8 @@ export default function LeetCodeDashboardPage() {
       )}
 
       {/* Search & Filter Bar */}
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
-        <div style={{ flex: 1, position: 'relative' }}>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
           <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             type="text"
@@ -574,6 +638,27 @@ export default function LeetCodeDashboardPage() {
           <option value="medium">Medium Only</option>
           <option value="hard">Hard Only</option>
         </select>
+
+        <button
+          className="btn"
+          onClick={() => setShowTodayOnly(!showTodayOnly)}
+          style={{
+            background: showTodayOnly ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.04)',
+            color: showTodayOnly ? '#10b981' : 'var(--text-secondary)',
+            border: showTodayOnly ? '1px solid #10b981' : '1px solid var(--border-color)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '0.85rem',
+            padding: '8px 14px',
+            borderRadius: 'var(--radius-sm)',
+            cursor: 'pointer',
+            fontWeight: 600,
+          }}
+        >
+          <Flame size={15} style={{ color: showTodayOnly ? '#10b981' : 'inherit' }} />
+          <span>Solved Today ({todayDoneCount})</span>
+        </button>
       </div>
 
       {/* Kanban Board Grid */}
@@ -614,6 +699,7 @@ export default function LeetCodeDashboardPage() {
                 >
                   <option value="inprogress">In Progress (Default)</option>
                   <option value="todo">To-Do</option>
+                  <option value="done">Completed (Done)</option>
                 </select>
               </div>
 
